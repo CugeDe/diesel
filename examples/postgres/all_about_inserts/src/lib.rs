@@ -261,18 +261,18 @@ fn examine_sql_from_insertable_struct_batch() {
 #[test]
 fn insert_get_results_batch() {
     let conn = establish_connection();
-    conn.test_transaction::<_, diesel::result::Error, _>(|| {
+    conn.test_transaction::<_, diesel::result::Error, _>(|conn| {
         use diesel::select;
         use schema::users::dsl::*;
 
-        let now = select(diesel::dsl::now).get_result::<SystemTime>(&conn)?;
+        let now = select(diesel::dsl::now).get_result::<SystemTime>(conn)?;
 
         let inserted_users = insert_into(users)
             .values(&vec![
                 (id.eq(1), name.eq("Sean")),
                 (id.eq(2), name.eq("Tess")),
             ])
-            .get_results(&conn)?;
+            .get_results(conn)?;
 
         let expected_users = vec![
             User {

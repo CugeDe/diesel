@@ -296,7 +296,7 @@ fn redo_latest_migration<Conn>(conn: &Conn, migrations_dir: &Path)
 where
     Conn: MigrationConnection + Any,
 {
-    let migration_inner = || {
+    let migration_inner = |conn| {
         let reverted_version =
             migrations::revert_latest_migration_in_directory(conn, migrations_dir)?;
         migrations::run_migration_with_version(
@@ -310,7 +310,7 @@ where
         conn.transaction(migration_inner)
             .unwrap_or_else(handle_error);
     } else {
-        migration_inner().unwrap_or_else(handle_error);
+        migration_inner(conn).unwrap_or_else(handle_error);
     }
 }
 

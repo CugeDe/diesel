@@ -336,7 +336,7 @@ fn insert_get_result() {
     use diesel::result::Error;
 
     let conn = establish_connection();
-    conn.test_transaction::<_, Error, _>(|| {
+    conn.test_transaction::<_, Error, _>(|conn| {
         use diesel::select;
         use schema::users::dsl::*;
 
@@ -387,7 +387,7 @@ pub fn explicit_returning(conn: &MysqlConnection) -> QueryResult<i32> {
     use diesel::result::Error;
     use schema::users::dsl::*;
 
-    conn.transaction::<_, Error, _>(|| {
+    conn.transaction::<_, Error, _>(|conn| {
         insert_into(users).values(name.eq("Ruby")).execute(conn)?;
 
         users.select(id).order(id.desc()).first(conn)

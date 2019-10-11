@@ -88,14 +88,14 @@ pub trait Connection: SimpleConnection + Sized + Send {
     /// #     Ok(())
     /// # }
     /// ```
-    fn transaction<T, E, F>(&self, f: F) -> Result<T, E>
+    fn transaction<'r, T, E, F>(&'r self, f: F) -> Result<T, E>
     where
-        F: FnOnce() -> Result<T, E>,
+        F: FnOnce(&'r Self) -> Result<T, E>,
         E: From<Error>,
     {
         let transaction_manager = self.transaction_manager();
         transaction_manager.begin_transaction(self)?;
-        match f() {
+        match f(self) {
             Ok(value) => {
                 transaction_manager.commit_transaction(self)?;
                 Ok(value)
@@ -149,14 +149,14 @@ pub trait Connection: SimpleConnection + Sized + Send {
     /// #     Ok(())
     /// # }
     /// ```
-    fn test_transaction<T, E, F>(&self, f: F) -> T
+    fn test_transaction<'r, T, E, F>(&'r self, f: F) -> T
     where
-        F: FnOnce() -> Result<T, E>,
+        F: FnOnce(&'r Self) -> Result<T, E>,
         E: Debug,
     {
         let mut user_result = None;
-        let _ = self.transaction::<(), _, _>(|| {
-            user_result = f().ok();
+        let _ = self.transaction::<(), _, _>(|conn| {
+            user_result = f(conn).ok();
             Err(Error::RollbackTransaction)
         });
         user_result.expect("Transaction did not succeed")

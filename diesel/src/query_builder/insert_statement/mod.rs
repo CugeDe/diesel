@@ -211,7 +211,7 @@ where
 {
     fn execute(query: Self, conn: &SqliteConnection) -> QueryResult<usize> {
         use connection::Connection;
-        conn.transaction(|| {
+        conn.transaction(|conn| {
             let mut result = 0;
             for record in query.records.records {
                 result += InsertStatement::new(
@@ -237,7 +237,7 @@ where
 {
     fn execute(query: Self, conn: &SqliteConnection) -> QueryResult<usize> {
         use connection::Connection;
-        conn.transaction(|| {
+        conn.transaction(|conn| {
             let mut result = 0;
             for value in query.records.values {
                 result +=
